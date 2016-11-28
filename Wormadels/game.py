@@ -45,9 +45,11 @@ class Game(object):
     def chooseCharacters(self):
 
         # First we need to arrange the order of the players
-        firstPlayerIndex = [i for i in self.players if i.hasFirstPick]
+        firstPlayerIndex = [i for i,v in enumerate(self.players) if v.hasFirstPick]
 
         assert len(firstPlayerIndex)==1, "First pick players: {}".format(firstPlayerIndex)
+
+        firstPlayerIndex = firstPlayerIndex[0]
 
         self.players = self.players[firstPlayerIndex:] + self.players[:firstPlayerIndex]
 
@@ -105,3 +107,28 @@ class Game(object):
                     self.characterInteraction.output("Error, choose again")
             else:
                 actionsRemain = False
+
+    def cycleThroughPlayers(self):
+
+        for c in self.characters:
+            playerList = [i for i in self.players if c in i.characters]
+            assert len(playerList) <= 1, "Following players have character {} - {}".format(c, playerList)
+            if len(playerList) == 0:
+                player = playerList[0]
+                self.playerTurn(player, c)
+
+    def cleanUpAfterTurn(self):
+        for p in self.players:
+            p.characters = []
+
+    def playGame(self):
+        self.gameSetup()
+        while (not self.isLastTurn):
+            self.chooseCharacters()
+            self.cycleThroughPlayers()
+            self.cleanUpAfterTurn()
+        return self.countVictoryPoints()
+
+    def countVictoryPoints(self):
+        ps = [sum(d.victoryPoints for d in p.districts) for p in self.players]
+        return ps

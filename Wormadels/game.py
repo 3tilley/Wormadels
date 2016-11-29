@@ -91,7 +91,7 @@ class Game(object):
                 if count > 0:
                     options[k] = name
                 
-            if len(options) > 1:
+            if len(options) >= 1:
                 self.characterInteraction.output.outputOptions(options, player.playerNo)
                 inp = self.characterInteraction.input.input()
                 choice = int(inp)

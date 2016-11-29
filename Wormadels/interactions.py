@@ -44,16 +44,19 @@ class Interactions(object):
             cards = deck.drawCards(2)
             c, d = self.discardAndTakeCards(player, cards, 1)
             deck.returnCards(d)
-            player.districts.append(c)
+            player.districts.extend(c)
 
     def performCharacterEffect(self, player, character, deck, **kwargs):
         pass
 
     def build(self, player, character, endDistricts=8, **kwargs):
-        self.output.outputOptions(player.districts, player.playerNo)
+        choices = [d for d in player.districts if d.cost <= player.gold]
+        self.output.outputOptions(choices, player.playerNo)
         buildIndex = self.input.input()
-        dist = player.districts.pop(buildIndex)
+        chosenDist = [i for i, v in enumerate(player.districts) if (v.name==choices[buildIndex].name)][0]
+        dist = player.districts.pop(chosenDist)
         player.builtDistricts.append(dist)
+        player.gold -= dist.cost
         if len(player.builtDistricts)==endDistricts:
             self.eventQueue("Game end triggered")
 

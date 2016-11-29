@@ -59,7 +59,7 @@ def createUnshuffledDeck(cards=None):
     if cards:
         unshuffled = sorted(cards, key=lambda x: x.cardId)
     else:
-        unshuffled = cardList
+        unshuffled = cardList + cardList
 
-    return Deck(cardList)
+    return Deck(unshuffled)
     

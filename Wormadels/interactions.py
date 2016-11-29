@@ -16,17 +16,17 @@ class Interactions(object):
 
         self.output.clearScreen()
 
-        self.output.output("Player {} please {} a card".format(player.name, verb))
+        self.output.output("Player {} please {} a card".format(player.name, verb), player.playerNo)
 
-        self.output.outputOptions(gameChars)
+        self.output.outputOptions(gameChars, player.playerNo)
 
         pick = self.input.input()
 
         while pick not in gameChars.keys():
-            self.output.output("Naughty, that's not a valid choice. Try again.")
+            self.output.output("Naughty, that's not a valid choice. Try again.", player.playerNo)
             pick = self.input.input()
 
-        self.output.output("You chose {}".format(gameChars[pick]))
+        self.output.output("You chose {}".format(gameChars[pick]), player.playerNo)
         
         if isPick:
             player.characters.append(gameChars[pick])
@@ -35,33 +35,34 @@ class Interactions(object):
 
         return pick
 
-    def takeCardsOrGold(self, player, deck):
-        self.output.outputOptions(["Take gold", "Take cards"])
+    def takeCardsOrGold(self, player, deck, **kwargs):
+        self.output.outputOptions(["Take gold", "Take cards"], player.playerNo)
         inp = self.input.input()
         if int(inp)==1:
             player.gold += 2
         elif int(inp)==2:
             cards = deck.drawCards(2)
-            c, d = self.discardAndTakeCards(cards, 1)
+            c, d = self.discardAndTakeCards(player, cards, 1)
             deck.returnCards(d)
             player.districts.append(c)
 
-    def performCharacterEffect(self, player, character, deck):
+    def performCharacterEffect(self, player, character, deck, **kwargs):
         pass
 
-    def build(self, player, character, endDistricts=8):
-        self.output.outputOptions(player.districts)
+    def build(self, player, character, endDistricts=8, **kwargs):
+        self.output.outputOptions(player.districts, player.playerNo)
         buildIndex = self.input.input()
         dist = player.districts.pop(buildIndex)
-        player.playedDistricts.append(dist)
-        if len(player.playedDistricts)==endDistricts:
+        player.builtDistricts.append(dist)
+        if len(player.builtDistricts)==endDistricts:
             self.eventQueue("Game end triggered")
 
-    def discardAndTakeCards(self, cards, numberToDiscard):
-        self.output.output("Discard {} cards".format(numberToDiscard))
+    def discardAndTakeCards(self, player, cards, numberToDiscard):
+        self.output.output(
+            "Discard {} card{}".format(numberToDiscard, "s" if numberToDiscard > 1 else ""), player.playerNo)
         discards = []
         for i in range(numberToDiscard):
-            self.output.outputOptions(cards)
+            self.output.outputOptions(cards, player.playerNo)
             inp = self.input.input()
             # TODO put error checking here
             d = cards.pop(inp-1)
@@ -73,20 +74,22 @@ class ScreenPrinter(object):
     def __init__(self):
         pass
 
-    def output(self, message):
-        print message
+    def output(self, message, playerId=None):
+        if playerId is None:
+            playerId = 0
+        print 4*playerId*"  " + message
 
     def clearScreen(self):
         print "\n" * 100
 
-    def outputOptions(self, options):
+    def outputOptions(self, options, playerId=None):
         if isinstance(options, list):
             d = { i+1: v for i, v in enumerate(options)}
         else:
             d = options
 
         for i in sorted(d.keys()):
-            self.output("{}. {}".format(i, d[i]))
+            self.output("{}. {}".format(i, d[i]), playerId)
 
 class ConsoleInput(object):
     def __init__(self):

@@ -38,7 +38,7 @@ class Game(object):
         self.players[firstPlayer].hasFirstPick = True
 
         for p in self.players:
-            p.districts.append(self.deck.drawCards(4))
+            p.districts.extend(self.deck.drawCards(4))
             p.gold = 2
         
 
@@ -54,7 +54,7 @@ class Game(object):
         self.players = self.players[firstPlayerIndex:] + self.players[:firstPlayerIndex]
 
         # Copy game characters so we don't destroy it
-        gameChars = self.characters
+        gameChars = {i+1: v for i, v in enumerate(self.characters)}
 
         # TODO this needs to be properly parameterised, only valid for 2
 
@@ -92,7 +92,7 @@ class Game(object):
                     options[k] = name
                 
             if len(options) > 1:
-                self.characterInteraction.output.outputOptions(options)
+                self.characterInteraction.output.outputOptions(options, player.playerNo)
                 inp = self.characterInteraction.input.input()
                 choice = int(inp)
                 if choice == 0:
@@ -104,7 +104,7 @@ class Game(object):
                     f(**kwargs)
                     optionsDict[choice] = (n, c-1, f)
                 else:
-                    self.characterInteraction.output("Error, choose again")
+                    self.characterInteraction.output("Error, choose again", player.playerNo)
             else:
                 actionsRemain = False
 
@@ -113,7 +113,7 @@ class Game(object):
         for c in self.characters:
             playerList = [i for i in self.players if c in i.characters]
             assert len(playerList) <= 1, "Following players have character {} - {}".format(c, playerList)
-            if len(playerList) == 0:
+            if len(playerList) != 0:
                 player = playerList[0]
                 self.playerTurn(player, c)
 

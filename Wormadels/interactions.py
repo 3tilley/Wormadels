@@ -51,14 +51,15 @@ class Interactions(object):
 
     def build(self, player, character, endDistricts=8, **kwargs):
         choices = [d for d in player.districts if d.cost <= player.gold]
-        self.output.outputOptions(choices, player.playerNo)
-        buildIndex = self.input.input()
-        chosenDist = [i for i, v in enumerate(player.districts) if (v.name==choices[buildIndex].name)][0]
-        dist = player.districts.pop(chosenDist)
-        player.builtDistricts.append(dist)
-        player.gold -= dist.cost
-        if len(player.builtDistricts)==endDistricts:
-            self.eventQueue("Game end triggered")
+        if len(choices) > 0:
+            self.output.outputOptions(choices, player.playerNo)
+            buildIndex = self.input.input() - 1
+            chosenDist = [i for i, v in enumerate(player.districts) if (v.name==choices[buildIndex].name)][0]
+            dist = player.districts.pop(chosenDist)
+            player.builtDistricts.append(dist)
+            player.gold -= dist.cost
+            if len(player.builtDistricts)==endDistricts:
+                self.eventQueue("Game end triggered")
 
     def discardAndTakeCards(self, player, cards, numberToDiscard):
         self.output.output(
